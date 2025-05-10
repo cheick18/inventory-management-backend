@@ -32,19 +32,19 @@ export const getItemsController = async (req, res) => {
  * Réponse : 201 avec ID de l'article créé, 400 si un champ manque ou si le champ price est invalide, 500 en cas d'erreur serveur.
  */
 export const createItemController = async (req, res) => {
-    const { name, price, description, user_id } = req.body;
-    if (!name || !price || !user_id) {
-        return res.status(400).json({ message: 'Missing required fields' });
+    const { USER_ID, NAME, PRICE, DESCRIPTION } = req.body;
+    if (!NAME || !PRICE || !USER_ID) {
+        return res.status(400).json({success:false, message: 'Missing required fields' });
     }
-    const priceNum = Number(price);
+    const priceNum = Number(PRICE);
     if (!Number.isFinite(priceNum) || priceNum <= 0) {
 
-        return res.status(400).json({ message: 'Price must be a valid positive number' });
+        return res.status(400).json({success:false, message: 'Price must be a valid positive number' });
 
     }
     try {
-        const result = await createItem(name, price, description, user_id);
-        res.status(201).json({ message: 'Item created', itemId: result.insertId });
+        const item = await createItem(USER_ID, NAME, PRICE, DESCRIPTION);
+        res.status(201).json({ success:true,data: item });
 
 
     } catch (error) {
@@ -63,10 +63,10 @@ export const createItemController = async (req, res) => {
 export const getItemController = async (req, res) => {
     try {
         const item = await getItemById(req.params.id);
-        if (!item) return res.status(404).json({ message: 'Item not found' });
-        res.status(200).json(item);
+        if (!item) return res.status(404).json({ success:false, message: 'Item not found' });
+        res.status(200).json({success:true, data:item });
     } catch (err) {
-        res.status(500).json({ message: 'Error fetching item', error: err.message });
+        res.status(500).json({ success:false, message: 'Error fetching item', error: err.message });
     };
 
 };
@@ -79,13 +79,26 @@ export const getItemController = async (req, res) => {
  * * Réponse : 200, 404 si l'article n'est pas trouvé, 500 en cas d'erreur serveur 
  */
 export const updateItemController = async (req, res) => {
-    const { name, price, description } = req.body;
+    const {  NAME, PRICE, DESCRIPTION } = req.body;
+      if (!NAME || !PRICE ) {
+        return res.status(400).json({success:false, message: 'Missing required fields' });
+    }
+    const priceNum = Number(PRICE);
+    if (!Number.isFinite(priceNum) || priceNum <= 0) {
+
+        return res.status(400).json({success:false, message: 'Price must be a valid positive number' });
+
+    }
+
     try {
-        const result = await updateItem(req.params.id, name, price, description);
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Item not found' });
-        res.status(200).json({ message: 'Item updated' });
+       
+        
+        const item = await updateItem(req.params.id,  NAME, PRICE, DESCRIPTION);
+        if (item == null) return res.status(404).json({ succes:false , message: 'Item not found' });
+        
+        res.status(200).json({ succes:true, data: item });
     } catch (err) {
-        res.status(500).json({ message: 'Error updating item', error: err.message });
+        res.status(500).json({ succes:false, message: 'Error updating item', error: err.message });
     }
 };
 
@@ -100,10 +113,10 @@ export const updateItemController = async (req, res) => {
 export const deleteItemController = async (req, res) => {
     try {
         const result = await deleteItem(req.params.id);
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Item not found' });
-        res.status(200).json({ message: 'Item deleted' });
+        if (result.affectedRows === 0) return res.status(404).json({ success:false, message: 'Item not found' });
+        res.status(200).json({succes:true, message: 'Item deleted' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting item', error: err.message });
+        res.status(500).json({success:false, message: 'Error deleting item', error: err.message });
 
     }
 }
