@@ -7,7 +7,7 @@ const app = express();
 
 
 const port = process.env.PORT || 4000
-const api =  process.env.API
+const api = process.env.API
 app.use(express.json());
 
 app.use(api, itemRoutes)
